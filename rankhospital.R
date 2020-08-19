@@ -1,47 +1,38 @@
-outcome <- read.csv("outcome-of-care-measures.csv")
-rankhospital<-function(state,outcom,num = "best"){
-  y<-unique(outcome$State)
-  if((outcom == "heart failure") & (state %in% y)){
+outcome <- read.csv("outcome-of-care-measures.csv", colClasses = "character")
+c<-outcome %>% arrange(Hospital.30.Day.Death..Mortality..Rates.from.Heart.Attack)
+p<-outcome %>% arrange(Hospital.30.Day.Death..Mortality..Rates.from.Heart.Failure)
+pn<-outcome %>% arrange(Hospital.30.Day.Death..Mortality..Rates.from.Pneumonia)
+rankhospital<-function(state,outcome,num = "best"){
+  b<-tapply(as.numeric(c$Hospital.30.Day.Death..Mortality..Rates.from.Heart.Attack),c$State,sort)
+  a<-tapply(as.numeric(p$Hospital.30.Day.Death..Mortality..Rates.from.Heart.Failure),p$State,sort)
+  pnt<-tapply(as.numeric(pn$Hospital.30.Day.Death..Mortality..Rates.from.Pneumonia),pn$State,sort)
+  if(outcome == "heart attack"){
+    bs<-unlist(b[names(b)== state])
     if(num == "best"){
-      num<-1
+      n<-c$Hospital.Name[(c$State==state) & (c$Hospital.30.Day.Death..Mortality..Rates.from.Heart.Attack == bs[1])]
+    }else if(num== "worst"){
+      n<-c$Hospital.Name[(c$State == state) & (c$Hospital.30.Day.Death..Mortality..Rates.from.Heart.Attack == max(bs))]
+    }else{
+      n<-c$Hospital.Name[(c$State == state) & (c$Hospital.30.Day.Death..Mortality..Rates.from.Heart.Attack == bs[num])]
     }
-    a<-tapply(as.numeric(outcome$Hospital.30.Day.Death..Mortality..Rates.from.Heart.Failure),outcome$State,sort)
-    b<-a[names(a) == state]
-    o<-unlist(b)
-    if(num == "worst"){
-      num<-length(o) 
-    }
-    n<-outcome$Hospital.Name[(outcome$Hospital.30.Day.Death..Mortality..Rates.from.Heart.Failure == o[num]) & (outcome$State == state)]
-  }else if(outcom == "heart attack"){
+  }else if(outcome == "heart failure"){
+    as<-unlist(a[names(a) == state])
     if(num == "best"){
-      num<-1
+      n<-p$Hospital.Name[(p$State==state) & (p$Hospital.30.Day.Death..Mortality..Rates.from.Heart.Failure == as[1])]
+    }else if(num== "worst"){
+      n<-p$Hospital.Name[(p$State == state) & (p$Hospital.30.Day.Death..Mortality..Rates.from.Heart.Failure == max(as))]
+    }else{
+      n<-p$Hospital.Name[(p$State == state) & (p$Hospital.30.Day.Death..Mortality..Rates.from.Heart.Failure == as[num])]
     }
-    a<-tapply(as.numeric(outcome$Hospital.30.Day.Death..Mortality..Rates.from.Heart.Attack),outcome$State,sort)
-    b<-a[names(a) == state]
-    o<- unlist(b)
-    if(num == "worst"){
-      num<- length(o)
-    }
-    n<-outcome$Hospital.Name[(outcome$Hospital.30.Day.Death..Mortality..Rates.from.Heart.Attack == o[num]) & (outcome$State==state)]
-  }else if((sum(outcom != c("heart attack","heart failure", "pneumonia"))) | !(state %in% y)){
-    if(sum(outcom != c("heart attack","heart failure", "pneumonia")) & (state %in% y)){
-      n<-"invalid outcome"
-    }else if(!(state %in% y) & sum(outcom == c("heart attack","heart failure", "pneumonia"))){
-      n<-"invalid state"
-    }else {
-      n<-"invalid outcome and invalid state"
-    }
-  }else if(outcom == "pneumonia"){
+  }else if(outcome == "pneumonia"){
+    pnts<-unlist(pnt[names(pnt)== state])
     if(num == "best"){
-      num<-1
+      n<-pn$Hospital.Name[(pn$State==state) & (pn$Hospital.30.Day.Death..Mortality..Rates.from.Pneumonia == pnts[1])]
+    }else if(num== "worst"){
+      n<-pn$Hospital.Name[(pn$State == state) & (pn$Hospital.30.Day.Death..Mortality..Rates.from.Pneumonia == max(pnts))]
+    }else{
+      n<-pn$Hospital.Name[(pn$State == state) & (pn$Hospital.30.Day.Death..Mortality..Rates.from.Pneumonia == pnts[num])]
     }
-    a<-tapply(as.numeric(outcome$Hospital.30.Day.Death..Mortality..Rates.from.Heart.Failure),outcome$State,sort)
-    b<-a[names(a) == state]
-    o<-unlist(b)
-    if(num == "worst"){
-      num<-length(o) 
-    }
-    n<-outcome$Hospital.Name[(outcome$Hospital.30.Day.Death..Mortality..Rates.from.Pneumonia == o[num]) & (outcome$State == state)]
   }
   n[1]
 }
